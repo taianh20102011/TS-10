@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Thi Tuyển Sinh 10 - Đa Ảnh</title>
+    <style>
+        :root { --primary: #1976d2; --danger: #d32f2f; --success: #2e7d32; --warning: #ffa000; --bg: #f0f4f8; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; margin-bottom: 20px; text-align: center; }
+        
+        /* Countdown thật */
+        .real-countdown { background: #fff3e0; padding: 15px; border-radius: 10px; border: 1px solid #ffe0b2; margin-bottom: 15px; }
+        .real-countdown span { color: var(--danger); font-weight: bold; font-size: 1.3rem; display: block; margin-top: 5px; }
+
+        .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; width: 100%; max-width: 500px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: #ddd; font-weight: bold; }
+        .tab-btn.active { background: var(--primary); color: white; }
+
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; box-sizing: border-box; }
+        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; }
+        
+        #timer { font-size: 3.5rem; font-weight: bold; margin: 10px 0; color: #222; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; color: white; }
+        .badge-done { background: var(--success); }
+        .badge-wait { background: var(--warning); }
+
+        .camera-box { background: #000; border-radius: 10px; overflow: hidden; margin-top: 15px; position: relative; border: 2px solid #333; }
+        #webcam { width: 100%; transform: scaleX(-1); display: block; }
+        
+        .gallery { display: flex; gap: 10px; overflow-x: auto; padding: 10px; background: #e0e0e0; border-radius: 10px; margin: 10px 0; min-height: 60px; }
+        .gallery img { width: 70px; height: 90px; object-fit: cover; border-radius: 5px; border: 2px solid white; cursor: pointer; transition: 0.2s; }
+        .gallery img:hover { opacity: 0.7; border-color: var(--danger); transform: scale(0.95); }
+        .gallery-hd { font-size: 0.8rem; color: #666; font-style: italic; margin-bottom: 5px; display:none; }
+
+        #fileInput { display: none; }
+        .upload-group { display: flex; gap: 10px; }
+        .btn-upload { background: #673ab7; flex: 1; }
+        .btn-capture { background: #e91e63; flex: 1; }
+    </style>
+</head>
+<body>
+
+<audio id="sndStart" src="da_bat_dau_thoi_gian_phat_de_va_lam_bai_354ca7ad-04c3-49b1-bbce-b84594a2cf25.mp3"></audio>
+<audio id="sndEnd" src="da_het_thoi_gian_lam_bai_ef68b990-7b57-4100-93e8-ce889a4fecfc.mp3"></audio>
+<audio id="sndW" src="con_5_phut_nua_la_het_gio_lam_bai_2f02fe92-648e-49bb-b740-663b0735cb14.mp3"></audio>
+<div id="loginSection" style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; display:flex; justify-content:center; align-items:center; z-index:1000;">
+    <div class="container" style="max-width: 350px;">
+        <h2 style="color: var(--primary);">ĐĂNG NHẬP THI</h2>
+        
+        <div class="real-countdown">
+            ⏳ Đếm ngược kỳ thi 10 chính thức:
+            <span id="realDays">-- ngày -- giờ</span>
+        </div>
+
+        <input type="text" id="studentName" placeholder="Họ và tên">
+        <input type="email" id="studentEmail" placeholder="Email nhận điểm">
+        <button onclick="login()">VÀO PHÒNG THI</button>
+    </div>
+</div>
+
+<div class="tab-menu">
+    <button class="tab-btn active" onclick="switchTab('exam', this)">Phòng Thi</button>
+    <button class="tab-btn" onclick="switchTab('leaderboard', this); loadLeaderboard();">Bảng Xếp Hạng</button>
+    <button class="tab-btn" onclick="switchTab('history', this); displayHistory();">Lịch Sử</button>
+</div>
+
+<div id="examTab" class="container">
+    <h3 id="welcomeUser">Chào: --</h3>
+    <div id="setup">
+        <select id="subjectSelect">
+            <option value="Toan">Toán (120 phút)</option>
+            <option value="Van">Ngữ Văn (120 phút)</option>
+            <option value="Anh">Tiếng Anh (90 phút)</option>
+        </select>
+        <button onclick="startExam()">BẮT ĐẦU TÍNH GIỜ</button>
+    </div>
+
+    <div id="exam-ui" style="display:none;">
+        <div id="timer">00:00:00</div>
+        <p>Môn: <strong id="dispSub">--</strong> | Mã đề: <strong id="dispCode" style="color:red">--</strong></p>
+        
+        <div id="cameraArea" style="display:none;">
+            <p style="color: var(--danger); font-weight: bold;">HẾT GIỜ! Chụp hoặc Tải ảnh bài làm</p>
+            <div class="camera-box">
+                <video id="webcam" autoplay playsinline></video>
+            </div>
+            
+            <div class="gallery-hd" id="galleryHint">Bấm vào ảnh để xóa nếu chọn sai</div>
+            <div class="gallery" id="photoGallery"></div>
+
+            <div class="upload-group">
+                <button onclick="takePhoto()" class="btn-capture">📸 CHỤP TRANG</button>
+                <button onclick="document.getElementById('fileInput').click()" class="btn-upload">📁 CHỌN FILE</button>
+                <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFileUpload(event)">
+            </div>
+
+            <button id="submitBtn" onclick="uploadToCloud()" style="background: var(--success); display:none; margin-top: 10px;">
+                NỘP TẤT CẢ (<span id="photoCount">0</span>) ẢNH
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="leaderboardTab" class="container" style="display:none;">
+    <h3 style="color: var(--warning);">🏆 BẢNG VÀNG THỦ KHOA</h3>
+    <table>
+        <thead><tr><th>Hạng</th><th>Tên</th><th>Môn</th><th>Điểm</th></tr></thead>
+        <tbody id="leaderboardBody"></tbody>
+    </table>
+</div>
+
+<div id="historyTab" class="container" style="display:none;">
+    <h3>📝 LỊCH SỬ LÀM BÀI</h3>
+    <table>
+        <thead><tr><th>Môn</th><th>Ngày</th><th>Trạng thái</th></tr></thead>
+        <tbody id="historyBody"></tbody>
+    </table>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfjgifr7U-vCVjjSHMVbnYtpu1s9Z4HCjOTPesmsJLpsDL1LrFYSWXNuLrCT9R7_bHOQ/exec";
+    const REAL_EXAM_DATE = new Date("2026-06-01T07:30:00").getTime(); // Cài đặt ngày thi thật
+    
+    let user = "", email = "", capturedImages = [];
+
+    // --- ĐẾM NGƯỢC NGÀY THI THẬT ---
+    function updateRealCountdown() {
+        const now = new Date().getTime();
+        const diff = REAL_EXAM_DATE - now;
+        if (diff <= 0) {
+            document.getElementById("realDays").innerText = "ĐẾN NGÀY THI RỒI!";
+            return;
+        }
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        document.getElementById("realDays").innerText = days + " ngày " + hours + " giờ";
+    }
+    setInterval(updateRealCountdown, 60000);
+    updateRealCountdown();
+
+    function playSound(id) {
+        const audio = document.getElementById(id);
+        if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
+    }
+
+    function switchTab(tabName, btn) {
+        document.getElementById('examTab').style.display = tabName === 'exam' ? 'block' : 'none';
+        document.getElementById('leaderboardTab').style.display = tabName === 'leaderboard' ? 'block' : 'none';
+        document.getElementById('historyTab').style.display = tabName === 'history' ? 'block' : 'none';
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    function login() {
+        user = document.getElementById('studentName').value;
+        email = document.getElementById('studentEmail').value;
+        if (!user || !email) return alert("Vui lòng nhập đầy đủ!");
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('welcomeUser').innerText = "Học sinh: " + user;
+    }
+
+    function startExam() {
+        if(!confirm("Bắt đầu tính giờ ngay bây giờ?")) return;
+        
+        playSound('sndStart'); // Âm thanh bắt đầu
+        
+        const subKey = document.getElementById('subjectSelect').value;
+        const config = { "Toan": [120, 36, "Toán"], "Van": [120, 20, "Ngữ Văn"], "Anh": [90, 8, "Tiếng Anh"] };
+        const [mins, maxCode, name] = config[subKey];
+        const code = Math.floor(Math.random() * maxCode) + 1;
+
+        saveLocalHistory(name, "Đang làm bài");
+        document.getElementById('setup').style.display = 'none';
+        document.getElementById('exam-ui').style.display = 'block';
+        document.getElementById('dispSub').innerText = name;
+        document.getElementById('dispCode').innerText = code;
+
+        let time = mins * 60;
+        const interval = setInterval(() => {
+            time--;
+            const h = Math.floor(time / 3600).toString().padStart(2,'0');
+            const m = Math.floor((time % 3600) / 60).toString().padStart(2,'0');
+            const s = (time % 60).toString().padStart(2,'0');
+            document.getElementById('timer').innerText = `${h}:${m}:${s}`;
+            
+            if (time === 10) document.getElementById('timer').style.color = 'red'; // Nháy đỏ 10s cuối
+            if (time === 5*60) {
+                playSound('sndW'); // Âm thanh cảnh báo 5s
+            }
+            if (time <= 0) { 
+                clearInterval(interval); 
+                playSound('sndEnd'); // Âm thanh kết thúc
+                alert("HẾT GIỜ LÀM BÀI! Hãy chụp bài nộp ngay.");
+                showCamera(); 
+            }
+        }, 1000);
+    }
+
+    async function showCamera() {
+        document.getElementById('cameraArea').style.display = 'block';
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById('webcam').srcObject = stream;
+        } catch (e) {
+            alert("Camera không mở được, hãy dùng nút CHỌN FILE.");
+        }
+    }
+
+    function takePhoto() {
+        const video = document.getElementById('webcam');
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        capturedImages.push(canvas.toDataURL('image/jpeg'));
+        renderGallery();
+        video.style.opacity = "0.5";
+        setTimeout(() => video.style.opacity = "1", 100);
+    }
+
+    function handleFileUpload(event) {
+        const files = event.target.files;
+        for (let i = 0; i < files.length; i++) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                capturedImages.push(e.target.result);
+                renderGallery();
+            };
+            reader.readAsDataURL(files[i]);
+        }
+        event.target.value = "";
+    }
+
+    function removePhoto(index) {
+        if(confirm("Xóa ảnh này?")) {
+            capturedImages.splice(index, 1);
+            renderGallery();
+        }
+    }
+
+    function renderGallery() {
+        const gallery = document.getElementById('photoGallery');
+        gallery.innerHTML = "";
+        capturedImages.forEach((imgData, index) => {
+            const img = document.createElement('img');
+            img.src = imgData;
+            img.onclick = () => removePhoto(index);
+            gallery.appendChild(img);
+        });
+        document.getElementById('photoCount').innerText = capturedImages.length;
+        document.getElementById('galleryHint').style.display = capturedImages.length > 0 ? 'block' : 'none';
+        document.getElementById('submitBtn').style.display = capturedImages.length > 0 ? 'block' : 'none';
+    }
+
+    async function uploadToCloud() {
+        if(capturedImages.length === 0) return alert("Chưa có ảnh bài làm!");
+        const btn = document.getElementById('submitBtn');
+        btn.innerText = "ĐANG GỬI " + capturedImages.length + " TRANG...";
+        btn.disabled = true;
+        const payload = { 
+            action: "submitExam", studentName: user, email: email, 
+            subject: document.getElementById('dispSub').innerText, 
+            code: document.getElementById('dispCode').innerText, images: capturedImages 
+        };
+        try {
+            await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
+            saveLocalHistory(document.getElementById('dispSub').innerText, "Đã nộp bài");
+            alert("Nộp bài thành công!");
+            location.reload();
+        } catch (e) {
+            alert("Lỗi nộp bài!");
+            btn.disabled = false;
+        }
+    }
+
+    function saveLocalHistory(sub, status) {
+        let history = JSON.parse(localStorage.getItem('my_exams') || "[]");
+        history.unshift({ sub, status, date: new Date().toLocaleDateString('vi-VN') });
+        localStorage.setItem('my_exams', JSON.stringify(history));
+    }
+
+    function displayHistory() {
+        const history = JSON.parse(localStorage.getItem('my_exams') || "[]");
+        document.getElementById('historyBody').innerHTML = history.map(i => `<tr><td>${i.sub}</td><td>${i.date}</td><td><span class="badge ${i.status==='Đã nộp bài'?'badge-done':'badge-wait'}">${i.status}</span></td></tr>`).join('');
+    }
+
+    async function loadLeaderboard() {
+        const tbody = document.getElementById('leaderboardBody');
+        tbody.innerHTML = "Đang tải...";
+        try {
+            const res = await fetch(SCRIPT_URL);
+            const data = await res.json();
+            const ranked = data.filter(i => !isNaN(parseFloat(i.score))).sort((a,b) => b.score - a.score);
+            tbody.innerHTML = ranked.slice(0,10).map((item, idx) => `<tr><td>${idx+1}</td><td>${item.name}</td><td>${item.subject}</td><td>${item.score}</td></tr>`).join('');
+        } catch(e) { tbody.innerHTML = "Không thể tải."; }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Giáo Viên Chấm Bài</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; padding: 20px; max-width: 800px; margin: 0 auto; }
+        
+        /* Style cho thanh lọc môn */
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .filter-btn {
+            padding: 10px 20px; border: none; background: #ddd; 
+            border-radius: 20px; cursor: pointer; font-weight: bold; color: #555;
+            transition: 0.3s;
+        }
+        .filter-btn:hover { background: #ccc; }
+        .filter-btn.active { background: #1976d2; color: white; box-shadow: 0 2px 5px rgba(25, 118, 210, 0.4); }
+
+        .item { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #1976d2; }
+        .item strong { font-size: 1.1rem; color: #333; }
+        
+        .imgs { display: flex; gap: 10px; margin: 15px 0; overflow-x: auto; padding-bottom: 5px; }
+        .imgs img { height: 120px; border-radius: 6px; border: 1px solid #eee; cursor: pointer; transition: transform 0.2s; }
+        .imgs img:hover { transform: scale(1.05); }
+        
+        .control-group { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+        input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+        input[type="number"] { width: 70px; text-align: center; font-weight: bold; color: #d32f2f; }
+        input[type="text"] { flex: 1; }
+        
+        button.save-btn { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button.save-btn:hover { background: #1b5e20; }
+        
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-left: 5px; color: white; }
+        .tag-Toán { background: #0288d1; }
+        .tag-Ngữ { background: #7b1fa2; } /* Ngữ Văn */
+        .tag-Tiếng { background: #e65100; } /* Tiếng Anh */
+    </style>
+</head>
+<body>
+    <h2 style="color:#1976d2; text-align:center;">👨‍🏫 HỆ THỐNG CHẤM THI</h2>
+    
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterData('Tất cả', this)">Tất cả</button>
+        <button class="filter-btn" onclick="filterData('Toán', this)">Toán</button>
+        <button class="filter-btn" onclick="filterData('Ngữ Văn', this)">Ngữ Văn</button>
+        <button class="filter-btn" onclick="filterData('Tiếng Anh', this)">Tiếng Anh</button>
+    </div>
+
+    <div id="list">Đang tải dữ liệu...</div>
+
+<script>
+    // Link Script cũ của bạn (Giữ nguyên)
+    const URL = "https://script.google.com/macros/s/AKfycbzfjgifr7U-vCVjjSHMVbnYtpu1s9Z4HCjOTPesmsJLpsDL1LrFYSWXNuLrCT9R7_bHOQ/exec";
+    
+    let allData = []; // Biến lưu trữ toàn bộ dữ liệu tải về
+    let currentFilter = 'Tất cả'; // Lưu trạng thái lọc hiện tại
+
+    async function load() {
+        document.getElementById('list').innerHTML = "⏳ Đang tải danh sách bài thi...";
+        try {
+            const res = await fetch(URL);
+            const r = await res.json();
+            allData = r.reverse(); // Lưu dữ liệu gốc vào biến toàn cục
+            render(allData); // Vẽ giao diện
+        } catch (e) {
+            document.getElementById('list').innerHTML = "❌ Lỗi tải dữ liệu!";
+        }
+    }
+
+    // Hàm lọc dữ liệu
+    function filterData(subject, btn) {
+        currentFilter = subject;
+        
+        // Cập nhật giao diện nút bấm
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+
+        // Lọc dữ liệu
+        if (subject === 'Tất cả') {
+            render(allData);
+        } else {
+            // Lọc theo tên môn (Toán, Ngữ Văn, Tiếng Anh)
+            const filtered = allData.filter(item => item.subject === subject);
+            render(filtered);
+        }
+    }
+
+    // Hàm vẽ danh sách ra màn hình
+    function render(dataList) {
+        const container = document.getElementById('list');
+        if (dataList.length === 0) {
+            container.innerHTML = "<p style='text-align:center; color:#666;'>Không có bài thi nào.</p>";
+            return;
+        }
+
+        container.innerHTML = dataList.map(i => {
+            // Tạo tag màu cho môn học đẹp hơn
+            let subClass = i.subject.includes('Toán') ? 'tag-Toán' : (i.subject.includes('Văn') ? 'tag-Ngữ' : 'tag-Tiếng');
+            
+            return `
+            <div class="item">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong>${i.name}</strong> 
+                        <span class="tag ${subClass}">${i.subject}</span>
+                    </div>
+                    <small style="color:#666">${i.email}</small>
+                </div>
+
+                <div class="imgs">
+                    ${i.link.split('\n').map(img => `<a href="${img}" target="_blank"><img src="${img}" title="Click để xem rõ hơn"></a>`).join('')}
+                </div>
+
+                <div class="control-group">
+                    <input type="number" id="s${i.id}" placeholder="Điểm" value="${i.score!='Chưa chấm'?i.score:''}">
+                    <input type="text" id="c${i.id}" placeholder="Nhận xét bài làm..." value="${i.comment}">
+                    <button class="save-btn" onclick="save('${i.id}')">LƯU & GỬI MAIL</button>
+                </div>
+            </div>
+        `}).join('');
+    }
+
+    async function save(id) {
+        const btn = event.target; // Lấy nút đang bấm
+        const originalText = btn.innerText;
+        btn.innerText = "Đang gửi..."; btn.disabled = true;
+
+        const s = document.getElementById('s'+id).value;
+        const c = document.getElementById('c'+id).value;
+        
+        try {
+            await fetch(URL, {
+                method: "POST", 
+                mode: "no-cors", 
+                body: JSON.stringify({action:"gradeExam", examId:id, score:s, comment:c})
+            });
+            alert("✅ Đã lưu điểm và gửi email thành công!");
+            
+            // Cập nhật lại dữ liệu cục bộ để không cần tải lại trang
+            const itemIndex = allData.findIndex(item => item.id == id);
+            if(itemIndex > -1) {
+                allData[itemIndex].score = s;
+                allData[itemIndex].comment = c;
+            }
+        } catch(e) {
+            alert("Lỗi khi lưu!");
+        } finally {
+            btn.innerText = originalText; btn.disabled = false;
+        }
+    }
+
+    load(); // Chạy khi mở trang
+</script>
+</body>
+</html>
