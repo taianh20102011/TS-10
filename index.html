@@ -1,302 +1,1169 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Thi Tuyển Sinh 10 - Đa Ảnh</title>
-    <style>
-        :root { --primary: #1976d2; --danger: #d32f2f; --success: #2e7d32; --warning: #ffa000; --bg: #f0f4f8; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
-        .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; margin-bottom: 20px; text-align: center; }
-        
-        /* Countdown thật */
-        .real-countdown { background: #fff3e0; padding: 15px; border-radius: 10px; border: 1px solid #ffe0b2; margin-bottom: 15px; }
-        .real-countdown span { color: var(--danger); font-weight: bold; font-size: 1.3rem; display: block; margin-top: 5px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExamPro – Hệ Thống Thi Tuyển Sinh 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Chakra+Petch:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<link rel="icon" type="image/x-icon" href="Gemini_Generated_Image_4lcxk84lcxk84lcx.ico">
+<style>
+/* ===== CSS VARIABLES ===== */
+:root {
+  --bg: #060b14;
+  --bg2: #0d1526;
+  --bg3: #112040;
+  --cyan: #00e5ff;
+  --cyan2: #00bcd4;
+  --gold: #ffd600;
+  --pink: #ff4081;
+  --green: #00e676;
+  --red: #ff1744;
+  --text: #e8f4ff;
+  --text2: #8ab4d4;
+  --glass: rgba(13,21,38,0.75);
+  --glass-border: rgba(0,229,255,0.2);
+  --card-shadow: 0 8px 32px rgba(0,229,255,0.08);
+  --neon-cyan: 0 0 10px #00e5ff, 0 0 30px #00e5ff44, 0 0 60px #00e5ff22;
+  --neon-red: 0 0 10px #ff1744, 0 0 30px #ff174444;
+  --neon-gold: 0 0 10px #ffd600, 0 0 30px #ffd60044;
+  --r: 12px;
+  --transition: 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="light"] {
+  --bg: #e8f0fe;
+  --bg2: #ffffff;
+  --bg3: #d0e4f7;
+  --cyan: #0077cc;
+  --cyan2: #005fa3;
+  --text: #0a1929;
+  --text2: #3a5a7a;
+  --glass: rgba(255,255,255,0.8);
+  --glass-border: rgba(0,119,204,0.25);
+  --card-shadow: 0 8px 32px rgba(0,119,204,0.1);
+  --neon-cyan: 0 2px 12px rgba(0,119,204,0.3);
+  --neon-red: 0 2px 12px rgba(220,30,50,0.3);
+}
 
-        .tab-menu { display: flex; gap: 10px; margin-bottom: 20px; width: 100%; max-width: 500px; }
-        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: #ddd; font-weight: bold; }
-        .tab-btn.active { background: var(--primary); color: white; }
+/* ===== RESET & BASE ===== */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  font-family: 'Chakra Petch', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background var(--transition), color var(--transition);
+}
 
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; box-sizing: border-box; }
-        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; }
-        
-        #timer { font-size: 3.5rem; font-weight: bold; margin: 10px 0; color: #222; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
-        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-        
-        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; color: white; }
-        .badge-done { background: var(--success); }
-        .badge-wait { background: var(--warning); }
+/* ===== ANIMATED GRADIENT BACKGROUND ===== */
+.bg-gradient {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: 
+    radial-gradient(ellipse 80% 50% at 20% 30%, rgba(0,229,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 70%, rgba(255,64,129,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 50% 50%, rgba(0,200,255,0.04) 0%, transparent 70%),
+    var(--bg);
+  animation: bgShift 12s ease-in-out infinite alternate;
+}
+@keyframes bgShift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
 
-        .camera-box { background: #000; border-radius: 10px; overflow: hidden; margin-top: 15px; position: relative; border: 2px solid #333; }
-        #webcam { width: 100%; transform: scaleX(-1); display: block; }
-        
-        .gallery { display: flex; gap: 10px; overflow-x: auto; padding: 10px; background: #e0e0e0; border-radius: 10px; margin: 10px 0; min-height: 60px; }
-        .gallery img { width: 70px; height: 90px; object-fit: cover; border-radius: 5px; border: 2px solid white; cursor: pointer; transition: 0.2s; }
-        .gallery img:hover { opacity: 0.7; border-color: var(--danger); transform: scale(0.95); }
-        .gallery-hd { font-size: 0.8rem; color: #666; font-style: italic; margin-bottom: 5px; display:none; }
+/* ===== PARTICLES ===== */
+#particles { position:fixed; inset:0; z-index:0; pointer-events:none; }
 
-        #fileInput { display: none; }
-        .upload-group { display: flex; gap: 10px; }
-        .btn-upload { background: #673ab7; flex: 1; }
-        .btn-capture { background: #e91e63; flex: 1; }
-    </style>
+/* ===== LAYOUT ===== */
+.app-wrapper {
+  position: relative; z-index: 1;
+  max-width: 580px; margin: 0 auto;
+  padding: 20px 16px 80px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
+  box-shadow: var(--card-shadow);
+  transition: all var(--transition);
+}
+.navbar-brand {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900; font-size: 1.1rem;
+  color: var(--cyan);
+  text-shadow: var(--neon-cyan);
+  letter-spacing: 2px;
+}
+.navbar-actions { display:flex; gap:10px; align-items:center; }
+.icon-btn {
+  width:36px; height:36px; border-radius:8px;
+  border: 1px solid var(--glass-border);
+  background: rgba(0,229,255,0.08);
+  color: var(--cyan); font-size:1.1rem;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition: all 0.2s;
+}
+.icon-btn:hover { background: rgba(0,229,255,0.2); box-shadow: var(--neon-cyan); }
+
+/* ===== COUNTDOWN ===== */
+.exam-countdown {
+  padding: 14px 20px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,214,0,0.25);
+  border-radius: var(--r);
+  text-align: center;
+  font-size: 0.8rem; color: var(--text2);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.exam-countdown .days-val {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.4rem; font-weight:700;
+  color: var(--gold);
+  text-shadow: var(--neon-gold);
+  display:block; margin-top:4px;
+}
+
+/* ===== CARD (glassmorphism) ===== */
+.card {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: all var(--transition);
+  animation: cardIn 0.5s cubic-bezier(0.4,0,0.2,1) both;
+}
+@keyframes cardIn {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.card-header {
+  padding: 16px 20px 0;
+  font-weight: 700; font-size: 1rem;
+  color: var(--cyan);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-body { padding: 16px 20px 20px; }
+
+/* ===== ANIMATED BORDER CARD ===== */
+.card-animated-border {
+  position: relative;
+  padding: 2px;
+  border-radius: var(--r);
+  background: linear-gradient(var(--angle,135deg), var(--cyan), var(--pink), var(--cyan));
+  background-size: 300% 300%;
+  animation: borderRotate 4s linear infinite;
+}
+@keyframes borderRotate {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.card-animated-border > .card-inner {
+  background: var(--bg2);
+  border-radius: calc(var(--r) - 2px);
+  padding: 16px 20px;
+}
+
+/* ===== TABS ===== */
+.tab-bar {
+  display: flex; gap: 6px; padding: 6px;
+  background: var(--glass);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r);
+}
+.tab-btn {
+  flex: 1; padding: 10px 8px;
+  border: none; border-radius: 8px;
+  cursor: pointer; font-family: 'Chakra Petch', sans-serif;
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.5px;
+  background: transparent; color: var(--text2);
+  transition: all 0.25s; text-transform: uppercase;
+  position: relative; overflow: hidden;
+}
+.tab-btn.active {
+  background: rgba(0,229,255,0.15);
+  color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0,229,255,0.2);
+}
+.tab-btn::after {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(circle at center, rgba(0,229,255,0.3), transparent);
+  opacity:0; transition:opacity 0.4s;
+}
+.tab-btn.active::after { opacity:1; }
+.tab-content { display:none; animation: tabIn 0.3s ease; }
+.tab-content.active { display:block; }
+@keyframes tabIn {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ===== INPUTS ===== */
+.field { margin-bottom: 12px; }
+.field label { display:block; font-size:0.72rem; font-weight:600; color:var(--text2); margin-bottom:6px; letter-spacing:1px; text-transform:uppercase; }
+.field input, .field select {
+  width:100%; padding:12px 16px;
+  background: rgba(0,229,255,0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px; color: var(--text);
+  font-family: 'Chakra Petch', sans-serif; font-size: 0.95rem;
+  transition: all 0.2s; outline:none;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--cyan);
+  background: rgba(0,229,255,0.1);
+  box-shadow: 0 0 0 3px rgba(0,229,255,0.15);
+}
+.field select option { background: var(--bg2); }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:13px 20px;
+  border:none; border-radius:8px; cursor:pointer;
+  font-family:'Chakra Petch',sans-serif; font-size:0.9rem; font-weight:700;
+  letter-spacing:1.5px; text-transform:uppercase;
+  position:relative; overflow:hidden; transition:all 0.25s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--cyan), var(--cyan2));
+  color: #000;
+}
+.btn-primary:hover { transform:translateY(-2px); box-shadow: 0 4px 20px rgba(0,229,255,0.4); }
+.btn-success {
+  background: linear-gradient(135deg, var(--green), #00c853);
+  color: #000;
+}
+.btn-success:hover { transform:translateY(-2px); box-shadow: 0 4px 20px rgba(0,230,118,0.4); }
+.btn-danger {
+  background: linear-gradient(135deg, var(--red), #d50000);
+  color: #fff;
+}
+.btn-pink {
+  background: linear-gradient(135deg, var(--pink), #c51162);
+  color: #fff;
+}
+.btn-purple {
+  background: linear-gradient(135deg, #7c4dff, #6200ea);
+  color: #fff;
+}
+.btn:active { transform:scale(0.97); }
+/* Ripple */
+.btn .ripple {
+  position:absolute; border-radius:50%;
+  background:rgba(255,255,255,0.3);
+  transform:scale(0); animation:rippleAnim 0.6s linear;
+  pointer-events:none;
+}
+@keyframes rippleAnim { to { transform:scale(4); opacity:0; } }
+.btn-row { display:flex; gap:10px; }
+.btn-row .btn { flex:1; }
+
+/* ===== TIMER ===== */
+.timer-display {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(3rem, 15vw, 5rem);
+  font-weight: 900; text-align:center;
+  color: var(--cyan);
+  text-shadow: var(--neon-cyan);
+  letter-spacing: 4px;
+  transition: color 0.5s, text-shadow 0.5s;
+  padding: 10px 0;
+}
+.timer-display.warning {
+  color: var(--gold);
+  text-shadow: var(--neon-gold);
+  animation: timerPulse 1s ease-in-out infinite;
+}
+.timer-display.danger {
+  color: var(--red);
+  text-shadow: var(--neon-red);
+  animation: timerPulse 0.5s ease-in-out infinite;
+}
+@keyframes timerPulse {
+  0%,100% { transform:scale(1); }
+  50%      { transform:scale(1.02); }
+}
+.exam-meta {
+  text-align:center; font-size:0.8rem;
+  color:var(--text2); letter-spacing:1px;
+  padding:4px 0 12px;
+}
+.exam-meta strong { color:var(--cyan); }
+.code-badge {
+  display:inline-block; padding:2px 10px;
+  background:rgba(255,23,68,0.15);
+  border:1px solid rgba(255,23,68,0.4);
+  border-radius:6px; color:var(--red); font-weight:700;
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-wrap {
+  height:4px; background:rgba(255,255,255,0.1);
+  border-radius:2px; overflow:hidden; margin-bottom:16px;
+}
+.progress-bar {
+  height:100%; border-radius:2px;
+  background: linear-gradient(90deg, var(--cyan), var(--pink));
+  transition: width 1s linear;
+  box-shadow: 0 0 8px var(--cyan);
+}
+
+/* ===== CAMERA AREA ===== */
+.camera-zone {
+  margin-top:12px;
+  border: 1px solid rgba(255,23,68,0.3);
+  border-radius: var(--r);
+  background: rgba(255,23,68,0.05);
+  padding: 16px;
+}
+.camera-zone .zone-title {
+  color:var(--red); font-size:0.85rem;
+  font-weight:700; text-align:center;
+  margin-bottom:12px; letter-spacing:1px;
+  animation:timerPulse 1.5s ease-in-out infinite;
+}
+.video-wrap {
+  position:relative; border-radius:10px; overflow:hidden;
+  background:#000; border:2px solid rgba(0,229,255,0.2);
+}
+#webcam { width:100%; transform:scaleX(-1); display:block; }
+.flash-overlay {
+  position:absolute; inset:0; background:white; opacity:0;
+  pointer-events:none; transition:opacity 0.05s;
+}
+.flash-overlay.flash { opacity:1; }
+
+/* ===== GALLERY ===== */
+.gallery-wrap {
+  border-radius:10px; background:rgba(0,0,0,0.3);
+  border:1px solid var(--glass-border);
+  padding:10px; margin:10px 0; min-height:70px;
+}
+.gallery-hint { font-size:0.72rem; color:var(--text2); margin-bottom:6px; font-style:italic; }
+.gallery {
+  display:flex; gap:8px; overflow-x:auto; flex-wrap:wrap;
+}
+.gallery-item {
+  position:relative; flex-shrink:0;
+  width:72px; height:90px; border-radius:6px; overflow:hidden;
+  border:2px solid var(--glass-border); cursor:pointer;
+  transition:all 0.2s; background:#111;
+}
+.gallery-item img { width:100%; height:100%; object-fit:cover; }
+.gallery-item .del-btn {
+  position:absolute; top:2px; right:2px;
+  width:18px; height:18px; border-radius:50%;
+  background:rgba(255,23,68,0.9); color:#fff;
+  font-size:10px; display:flex; align-items:center; justify-content:center;
+  opacity:0; transition:opacity 0.2s;
+}
+.gallery-item:hover .del-btn { opacity:1; }
+.gallery-item:hover { transform:scale(0.95); border-color:var(--red); }
+.gallery-page-num {
+  position:absolute; bottom:2px; left:2px;
+  background:rgba(0,0,0,0.7); color:#fff;
+  font-size:8px; padding:1px 4px; border-radius:3px;
+}
+
+/* ===== DROP ZONE ===== */
+.drop-zone {
+  border:2px dashed var(--glass-border); border-radius:10px;
+  padding:20px; text-align:center; color:var(--text2);
+  font-size:0.8rem; transition:all 0.2s; cursor:pointer;
+  margin:8px 0;
+}
+.drop-zone.drag-over { border-color:var(--cyan); background:rgba(0,229,255,0.08); color:var(--cyan); }
+
+/* ===== TOAST ===== */
+#toast-container {
+  position:fixed; bottom:24px; right:16px; z-index:9999;
+  display:flex; flex-direction:column-reverse; gap:8px;
+}
+.toast {
+  padding:12px 18px; border-radius:10px;
+  backdrop-filter:blur(20px); color:#fff; font-size:0.85rem;
+  font-weight:600; font-family:'Chakra Petch',sans-serif;
+  border:1px solid rgba(255,255,255,0.15);
+  animation:toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
+  max-width:260px; display:flex; align-items:center; gap:8px;
+}
+.toast-success { background:rgba(0,200,100,0.85); }
+.toast-warn    { background:rgba(255,160,0,0.85); }
+.toast-error   { background:rgba(255,23,68,0.85); }
+.toast-info    { background:rgba(0,180,220,0.85); }
+@keyframes toastIn  { from{opacity:0;transform:translateX(50px)} to{opacity:1;transform:translateX(0)} }
+@keyframes toastOut { to{opacity:0;transform:translateX(50px)} }
+
+/* ===== LEADERBOARD ===== */
+.podium-wrap { display:flex; gap:8px; align-items:flex-end; margin-bottom:20px; }
+.podium-item {
+  flex:1; border-radius:10px 10px 0 0; text-align:center;
+  padding:10px 6px; position:relative; overflow:hidden;
+}
+.podium-1 { background:linear-gradient(135deg, #ffd600, #ff9800); color:#000; height:110px; }
+.podium-2 { background:linear-gradient(135deg, #b0bec5, #607d8b); color:#fff; height:85px; }
+.podium-3 { background:linear-gradient(135deg, #8d6e63, #5d4037); color:#fff; height:70px; }
+.podium-rank { font-family:'Orbitron',monospace; font-size:1.4rem; font-weight:900; }
+.podium-name { font-size:0.7rem; font-weight:700; word-break:break-word; margin-top:2px; }
+.podium-score { font-size:0.9rem; font-weight:700; margin-top:4px; }
+.podium-crown { font-size:1.2rem; display:block; animation:crownBob 1.5s ease-in-out infinite; }
+@keyframes crownBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+.lb-table { width:100%; border-collapse:collapse; }
+.lb-table th { font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--text2); padding:8px 10px; border-bottom:1px solid var(--glass-border); }
+.lb-table td { padding:10px; font-size:0.85rem; border-bottom:1px solid rgba(255,255,255,0.05); }
+.lb-table tr:hover td { background:rgba(0,229,255,0.04); }
+.lb-rank { font-family:'Orbitron',monospace; font-weight:700; color:var(--cyan); }
+.lb-score { font-weight:700; color:var(--green); }
+.skeleton {
+  background:linear-gradient(90deg, var(--bg2), var(--bg3), var(--bg2));
+  background-size:200% 100%;
+  animation:skelAnim 1.4s linear infinite;
+  border-radius:4px; height:14px;
+}
+@keyframes skelAnim { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ===== HISTORY ===== */
+.hist-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05);
+  font-size:0.85rem;
+}
+.badge {
+  padding:3px 10px; border-radius:20px;
+  font-size:0.7rem; font-weight:700; letter-spacing:0.5px;
+}
+.badge-done { background:rgba(0,230,118,0.2); color:var(--green); border:1px solid rgba(0,230,118,0.3); }
+.badge-wait { background:rgba(255,160,0,0.2); color:#ffa000; border:1px solid rgba(255,160,0,0.3); }
+
+/* ===== ANTI-CHEAT WARN ===== */
+.cheat-warn {
+  position:fixed; inset:0; z-index:9000;
+  background:rgba(255,23,68,0.95);
+  display:none; align-items:center; justify-content:center;
+  flex-direction:column; gap:16px; text-align:center; padding:30px;
+  font-family:'Orbitron',monospace;
+}
+.cheat-warn.show { display:flex; }
+.cheat-warn h2 { font-size:1.5rem; color:#fff; }
+.cheat-warn p  { color:rgba(255,255,255,0.85); font-size:0.9rem; font-family:'Chakra Petch',sans-serif; }
+.cheat-warn .warn-count { font-size:3rem; font-weight:900; color:#fff; }
+
+/* ===== LOGIN OVERLAY ===== */
+#loginSection {
+  position:fixed; inset:0; z-index:5000;
+  background: var(--bg);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.login-box {
+  width:100%; max-width:380px;
+  background: var(--glass);
+  backdrop-filter:blur(30px);
+  border:1px solid var(--glass-border);
+  border-radius:20px; padding:36px 28px;
+  animation: cardIn 0.6s ease;
+}
+.login-logo {
+  font-family:'Orbitron',monospace;
+  font-size:1.6rem; font-weight:900;
+  color:var(--cyan); text-shadow:var(--neon-cyan);
+  text-align:center; margin-bottom:4px; letter-spacing:3px;
+}
+.login-sub {
+  text-align:center; color:var(--text2);
+  font-size:0.78rem; margin-bottom:24px;
+  letter-spacing:1px; text-transform:uppercase;
+}
+.login-divider {
+  display:flex; align-items:center; gap:12px;
+  color:var(--text2); font-size:0.75rem; margin:12px 0;
+}
+.login-divider::before,.login-divider::after {
+  content:''; flex:1; height:1px; background:var(--glass-border);
+}
+
+/* ===== CURSOR GLOW ===== */
+.cursor-glow {
+  position:fixed; width:300px; height:300px;
+  border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%);
+  transform:translate(-50%,-50%); z-index:0;
+  transition:left 0.15s ease, top 0.15s ease;
+}
+
+/* ===== FULLSCREEN PROMPT ===== */
+.fs-prompt {
+  text-align:center; padding:12px; background:rgba(255,214,0,0.1);
+  border:1px solid rgba(255,214,0,0.3); border-radius:8px;
+  font-size:0.8rem; color:var(--gold); margin-bottom:12px; display:none;
+}
+
+/* ===== MISC ===== */
+.section-title {
+  font-size:0.7rem; font-weight:700; letter-spacing:2px;
+  text-transform:uppercase; color:var(--text2); margin-bottom:10px;
+}
+.dot { width:6px; height:6px; border-radius:50%; background:var(--cyan); display:inline-block; }
+.live-dot { animation:pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.6)} }
+#fileInput { display:none; }
+
+.welcome-line {
+  font-size:0.85rem; color:var(--text2);
+  padding: 0 0 4px;
+}
+.welcome-name {
+  font-size:1.05rem; font-weight:700; color:var(--cyan);
+}
+
+/* ===== DARK/LIGHT TRANSITION ===== */
+body, .card, .navbar, .tab-bar, .login-box {
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+</style>
 </head>
 <body>
 
+<!-- Audio -->
 <audio id="sndStart" src="da_bat_dau_thoi_gian_phat_de_va_lam_bai_354ca7ad-04c3-49b1-bbce-b84594a2cf25.mp3"></audio>
-<audio id="sndEnd" src="da_het_thoi_gian_lam_bai_ef68b990-7b57-4100-93e8-ce889a4fecfc.mp3"></audio>
-<audio id="sndW" src="con_5_phut_nua_la_het_gio_lam_bai_2f02fe92-648e-49bb-b740-663b0735cb14.mp3"></audio>
-<div id="loginSection" style="position:fixed; top:0; left:0; width:100%; height:100%; background:white; display:flex; justify-content:center; align-items:center; z-index:1000;">
-    <div class="container" style="max-width: 350px;">
-        <h2 style="color: var(--primary);">ĐĂNG NHẬP THI</h2>
-        
-        <div class="real-countdown">
-            ⏳ Đếm ngược kỳ thi 10 chính thức:
-            <span id="realDays">-- ngày -- giờ</span>
+<audio id="sndEnd"   src="da_het_thoi_gian_lam_bai_ef68b990-7b57-4100-93e8-ce889a4fecfc.mp3"></audio>
+<audio id="sndW"     src="con_5_phut_nua_la_het_gio_lam_bai_2f02fe92-648e-49bb-b740-663b0735cb14.mp3"></audio>
+
+<!-- BG & Cursor -->
+<div class="bg-gradient"></div>
+<canvas id="particles"></canvas>
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<!-- Anti-cheat warning overlay -->
+<div class="cheat-warn" id="cheatWarn">
+  <div class="warn-count" id="warnCount">⚠️</div>
+  <h2>VI PHẠM QUY CHẾ THI</h2>
+  <p id="warnMsg">Phát hiện hành vi gian lận!</p>
+  <p style="font-size:0.75rem;opacity:0.8;">Hành vi này đã được ghi lại. Quay lại làm bài.</p>
+  <button class="btn btn-danger" style="max-width:200px;margin-top:8px" onclick="dismissWarn()">QUAY LẠI THI</button>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- ===== LOGIN ===== -->
+<div id="loginSection">
+  <div class="login-box">
+    <div class="login-logo">EXAM<span style="color:var(--pink)">PRO</span></div>
+    <div class="login-sub">Hệ Thống Thi Tuyển Sinh Lớp 10</div>
+
+    <div class="exam-countdown" style="margin-bottom:20px;">
+      ⏳ Kỳ thi chính thức:
+      <span class="days-val" id="realDaysLogin">Đang tính...</span>
+    </div>
+
+    <div class="field">
+      <label>Họ và tên</label>
+      <input type="text" id="studentName" placeholder="Nguyễn Văn A" autocomplete="name">
+    </div>
+    <div class="field">
+      <label>Email nhận điểm</label>
+      <input type="email" id="studentEmail" placeholder="example@gmail.com">
+    </div>
+    <button class="btn btn-primary" onclick="login()">VÀO PHÒNG THI →</button>
+
+    <div class="login-divider">Phiên bản thử nghiệm</div>
+    <div style="text-align:center;font-size:0.72rem;color:var(--text2);">
+      Hệ thống thi trực tuyến • Chống gian lận AI
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div class="app-wrapper">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-brand">EXAM<span style="color:var(--pink)">PRO</span></div>
+    <div class="navbar-actions">
+      <span style="font-size:0.75rem;color:var(--text2);" id="navUser"></span>
+      <button class="icon-btn" onclick="toggleTheme()" title="Đổi theme" id="themeBtn">🌙</button>
+      <button class="icon-btn" onclick="toggleFullscreen()" title="Toàn màn hình" id="fsBtn">⛶</button>
+    </div>
+  </nav>
+
+  <!-- Countdown -->
+  <div class="exam-countdown">
+    ⏳ Kỳ thi Tuyển Sinh 10 TP.HCM chính thức:
+    <span class="days-val" id="realDays">Đang tính...</span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('exam',this)">🎯 Phòng Thi</button>
+    <button class="tab-btn" onclick="switchTab('leaderboard',this);loadLeaderboard();">🏆 Bảng Vàng</button>
+    <button class="tab-btn" onclick="switchTab('history',this);displayHistory();">📋 Lịch Sử</button>
+  </div>
+
+  <!-- ===== EXAM TAB ===== -->
+  <div class="tab-content active" id="tab-exam">
+
+    <!-- Setup -->
+    <div id="examSetup" class="card">
+      <div class="card-header"><span class="dot live-dot"></span> Chuẩn Bị Thi</div>
+      <div class="card-body">
+        <div class="welcome-line">Chào mừng, <span class="welcome-name" id="welcomeName">--</span></div>
+        <div style="margin:14px 0;">
+          <div class="field">
+            <label>Chọn môn thi</label>
+            <select id="subjectSelect">
+              <option value="Toan">📐 Toán — 120 phút</option>
+              <option value="Van">📖 Ngữ Văn — 120 phút</option>
+              <option value="Anh">🌐 Tiếng Anh — 90 phút</option>
+            </select>
+          </div>
+          <div class="fs-prompt" id="fsPrompt">💡 Bật toàn màn hình để vào chế độ thi nghiêm túc</div>
         </div>
-
-        <input type="text" id="studentName" placeholder="Họ và tên">
-        <input type="email" id="studentEmail" placeholder="Email nhận điểm">
-        <button onclick="login()">VÀO PHÒNG THI</button>
-    </div>
-</div>
-
-<div class="tab-menu">
-    <button class="tab-btn active" onclick="switchTab('exam', this)">Phòng Thi</button>
-    <button class="tab-btn" onclick="switchTab('leaderboard', this); loadLeaderboard();">Bảng Xếp Hạng</button>
-    <button class="tab-btn" onclick="switchTab('history', this); displayHistory();">Lịch Sử</button>
-</div>
-
-<div id="examTab" class="container">
-    <h3 id="welcomeUser">Chào: --</h3>
-    <div id="setup">
-        <select id="subjectSelect">
-            <option value="Toan">Toán (120 phút)</option>
-            <option value="Van">Ngữ Văn (120 phút)</option>
-            <option value="Anh">Tiếng Anh (90 phút)</option>
-        </select>
-        <button onclick="startExam()">BẮT ĐẦU TÍNH GIỜ</button>
+        <button class="btn btn-primary" onclick="startExam()">
+          ▶ BẮT ĐẦU TÍNH GIỜ
+        </button>
+      </div>
     </div>
 
-    <div id="exam-ui" style="display:none;">
-        <div id="timer">00:00:00</div>
-        <p>Môn: <strong id="dispSub">--</strong> | Mã đề: <strong id="dispCode" style="color:red">--</strong></p>
-        
-        <div id="cameraArea" style="display:none;">
-            <p style="color: var(--danger); font-weight: bold;">HẾT GIỜ! Chụp hoặc Tải ảnh bài làm</p>
-            <div class="camera-box">
-                <video id="webcam" autoplay playsinline></video>
-            </div>
-            
-            <div class="gallery-hd" id="galleryHint">Bấm vào ảnh để xóa nếu chọn sai</div>
-            <div class="gallery" id="photoGallery"></div>
+    <!-- Exam UI -->
+    <div id="examUI" style="display:none;">
 
-            <div class="upload-group">
-                <button onclick="takePhoto()" class="btn-capture">📸 CHỤP TRANG</button>
-                <button onclick="document.getElementById('fileInput').click()" class="btn-upload">📁 CHỌN FILE</button>
-                <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFileUpload(event)">
+      <!-- Timer card (animated border) -->
+      <div class="card-animated-border">
+        <div class="card-inner">
+          <div class="timer-display" id="timer">00:00:00</div>
+          <div class="progress-wrap">
+            <div class="progress-bar" id="progressBar" style="width:100%"></div>
+          </div>
+          <div class="exam-meta">
+            Môn: <strong id="dispSub">--</strong> &nbsp;|&nbsp; Mã đề: <span class="code-badge" id="dispCode">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera / submit zone -->
+      <div id="cameraArea" class="card" style="display:none;">
+        <div class="card-body">
+          <div class="camera-zone">
+            <div class="zone-title">⚠ HẾT GIỜ — NỘP BÀI NGAY</div>
+
+            <div class="video-wrap">
+              <video id="webcam" autoplay playsinline></video>
+              <div class="flash-overlay" id="flashOverlay"></div>
             </div>
 
-            <button id="submitBtn" onclick="uploadToCloud()" style="background: var(--success); display:none; margin-top: 10px;">
-                NỘP TẤT CẢ (<span id="photoCount">0</span>) ẢNH
+            <div class="gallery-wrap">
+              <div class="gallery-hint" id="galleryHint">📌 Bấm vào ảnh để xóa nếu chọn sai</div>
+              <div class="gallery" id="photoGallery"></div>
+            </div>
+
+            <!-- Drop zone -->
+            <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+              📁 Kéo thả file ảnh vào đây hoặc bấm để chọn
+            </div>
+            <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFileUpload(event)">
+
+            <div class="btn-row" style="margin-top:10px;">
+              <button class="btn btn-pink" onclick="takePhoto()">📸 CHỤP TRANG</button>
+              <button class="btn btn-purple" onclick="document.getElementById('fileInput').click()">📂 CHỌN FILE</button>
+            </div>
+
+            <button class="btn btn-success" id="submitBtn" style="display:none;margin-top:12px;" onclick="uploadToCloud()">
+              ✅ NỘP TẤT CẢ (<span id="photoCount">0</span>) ẢNH
             </button>
+          </div>
         </div>
+      </div>
+
     </div>
-</div>
+  </div>
 
-<div id="leaderboardTab" class="container" style="display:none;">
-    <h3 style="color: var(--warning);">🏆 BẢNG VÀNG THỦ KHOA</h3>
-    <table>
-        <thead><tr><th>Hạng</th><th>Tên</th><th>Môn</th><th>Điểm</th></tr></thead>
-        <tbody id="leaderboardBody"></tbody>
-    </table>
-</div>
+  <!-- ===== LEADERBOARD TAB ===== -->
+  <div class="tab-content" id="tab-leaderboard">
+    <div class="card">
+      <div class="card-header">🏆 Bảng Vàng Thủ Khoa</div>
+      <div class="card-body">
+        <!-- Podium top 3 -->
+        <div class="podium-wrap" id="podium">
+          <div class="podium-item podium-2">
+            <div class="podium-rank">2</div>
+            <div class="podium-name" id="pod2name">--</div>
+            <div class="podium-score" id="pod2score">--</div>
+          </div>
+          <div class="podium-item podium-1">
+            <span class="podium-crown">👑</span>
+            <div class="podium-rank">1</div>
+            <div class="podium-name" id="pod1name">--</div>
+            <div class="podium-score" id="pod1score">--</div>
+          </div>
+          <div class="podium-item podium-3">
+            <div class="podium-rank">3</div>
+            <div class="podium-name" id="pod3name">--</div>
+            <div class="podium-score" id="pod3score">--</div>
+          </div>
+        </div>
+        <div class="section-title">Top 10</div>
+        <table class="lb-table">
+          <thead><tr><th>Hạng</th><th>Tên</th><th>Môn</th><th>Điểm</th></tr></thead>
+          <tbody id="leaderboardBody">
+            <!-- skeleton -->
+            <tr><td colspan="4"><div class="skeleton" style="width:100%"></div></td></tr>
+            <tr><td colspan="4"><div class="skeleton" style="width:85%;margin-top:4px"></div></td></tr>
+            <tr><td colspan="4"><div class="skeleton" style="width:70%;margin-top:4px"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-<div id="historyTab" class="container" style="display:none;">
-    <h3>📝 LỊCH SỬ LÀM BÀI</h3>
-    <table>
-        <thead><tr><th>Môn</th><th>Ngày</th><th>Trạng thái</th></tr></thead>
-        <tbody id="historyBody"></tbody>
-    </table>
-</div>
+  <!-- ===== HISTORY TAB ===== -->
+  <div class="tab-content" id="tab-history">
+    <div class="card">
+      <div class="card-header">📋 Lịch Sử Làm Bài</div>
+      <div class="card-body" id="historyBody">
+        <div style="text-align:center;color:var(--text2);padding:30px;font-size:0.85rem;">Chưa có lịch sử</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app-wrapper -->
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfjgifr7U-vCVjjSHMVbnYtpu1s9Z4HCjOTPesmsJLpsDL1LrFYSWXNuLrCT9R7_bHOQ/exec";
-    const REAL_EXAM_DATE = new Date("2026-06-01T07:30:00").getTime(); // Cài đặt ngày thi thật
-    
-    let user = "", email = "", capturedImages = [];
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfjgifr7U-vCVjjSHMVbnYtpu1s9Z4HCjOTPesmsJLpsDL1LrFYSWXNuLrCT9R7_bHOQ/exec";
+const REAL_EXAM_DATE = new Date("2026-06-01T07:30:00").getTime();
 
-    // --- ĐẾM NGƯỢC NGÀY THI THẬT ---
-    function updateRealCountdown() {
-        const now = new Date().getTime();
-        const diff = REAL_EXAM_DATE - now;
-        if (diff <= 0) {
-            document.getElementById("realDays").innerText = "ĐẾN NGÀY THI RỒI!";
-            return;
-        }
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        document.getElementById("realDays").innerText = days + " ngày " + hours + " giờ";
+let user = "", email = "";
+let capturedImages = [];
+let examTimerInterval = null;
+let totalExamSeconds = 0;
+let remainingSeconds = 0;
+let warnCount = 0;
+let examRunning = false;
+
+/* ============================================================
+   PARTICLES
+   ============================================================ */
+(function(){
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, pts = [];
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  for(let i=0;i<60;i++) pts.push({ x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-0.5)*0.4, vy:(Math.random()-0.5)*0.4, r:Math.random()*1.5+0.5, o:Math.random()*0.5+0.15 });
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x += p.vx; p.y += p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(0,229,255,${p.o})`; ctx.fill();
+    });
+    pts.forEach((a,i)=>{ pts.forEach((b,j)=>{ if(i>=j)return; const dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy); if(d<100){ ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.strokeStyle=`rgba(0,229,255,${0.08*(1-d/100)})`; ctx.lineWidth=0.5; ctx.stroke(); } }); });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ============================================================
+   CURSOR GLOW
+   ============================================================ */
+document.addEventListener('mousemove', e => {
+  const g = document.getElementById('cursorGlow');
+  g.style.left = e.clientX + 'px'; g.style.top = e.clientY + 'px';
+});
+
+/* ============================================================
+   RIPPLE EFFECT
+   ============================================================ */
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.btn');
+  if(!btn) return;
+  const r = document.createElement('span'); r.className='ripple';
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
+  btn.appendChild(r); setTimeout(()=>r.remove(), 700);
+});
+
+/* ============================================================
+   THEME
+   ============================================================ */
+let isDark = localStorage.getItem('theme') !== 'light';
+function applyTheme(){ document.documentElement.setAttribute('data-theme', isDark?'dark':'light'); document.getElementById('themeBtn').textContent = isDark?'🌙':'☀️'; localStorage.setItem('theme', isDark?'dark':'light'); }
+function toggleTheme(){ isDark=!isDark; applyTheme(); toast('Đã đổi sang '+( isDark?'dark':'light')+' mode','info'); }
+applyTheme();
+
+/* ============================================================
+   COUNTDOWN
+   ============================================================ */
+function calcCountdown(){
+  const now = Date.now(), diff = REAL_EXAM_DATE - now;
+  if(diff<=0) return 'ĐÃ ĐẾN NGÀY THI! 🎉';
+  const d=Math.floor(diff/86400000), h=Math.floor((diff%86400000)/3600000);
+  return d + ' ngày ' + h + ' giờ';
+}
+function updateCountdowns(){
+  const v = calcCountdown();
+  document.getElementById('realDays').textContent = v;
+  document.getElementById('realDaysLogin').textContent = v;
+}
+setInterval(updateCountdowns, 60000); updateCountdowns();
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function toast(msg, type='info', dur=2800){
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  const icons = {success:'✅',warn:'⚠️',error:'❌',info:'ℹ️'};
+  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(()=>t.remove(), dur+300);
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+function login(){
+  const n = document.getElementById('studentName').value.trim();
+  const e = document.getElementById('studentEmail').value.trim();
+  if(!n||!e){ toast('Vui lòng nhập đầy đủ!','error'); return; }
+  if(!e.includes('@')){ toast('Email không hợp lệ!','error'); return; }
+  user=n; email=e;
+  document.getElementById('loginSection').style.display='none';
+  document.getElementById('welcomeName').textContent = user;
+  document.getElementById('navUser').textContent = user;
+  document.getElementById('fsPrompt').style.display='block';
+  toast('Chào mừng '+user+'! Chúc thi tốt 💪','success');
+}
+
+/* ============================================================
+   FULLSCREEN
+   ============================================================ */
+function toggleFullscreen(){
+  if(!document.fullscreenElement){ document.documentElement.requestFullscreen(); document.getElementById('fsBtn').textContent='⊡'; document.getElementById('fsPrompt').style.display='none'; toast('Đã bật toàn màn hình','success'); }
+  else { document.exitFullscreen(); document.getElementById('fsBtn').textContent='⛶'; }
+}
+document.addEventListener('fullscreenchange', ()=>{
+  if(!document.fullscreenElement && examRunning){
+    triggerWarn('Thoát toàn màn hình trong khi thi');
+  }
+});
+
+/* ============================================================
+   TAB SWITCH DETECTION
+   ============================================================ */
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden && examRunning) triggerWarn('Chuyển tab/ứng dụng khác');
+});
+
+/* ============================================================
+   COPY/PASTE BLOCK
+   ============================================================ */
+document.addEventListener('copy',  e=>{ if(examRunning){ e.preventDefault(); triggerWarn('Sao chép (Ctrl+C)'); } });
+document.addEventListener('paste', e=>{ if(examRunning){ e.preventDefault(); triggerWarn('Dán (Ctrl+V)'); } });
+document.addEventListener('keydown', e=>{
+  if(examRunning){
+    if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['I','J','C'].includes(e.key))){ e.preventDefault(); triggerWarn('Mở DevTools'); }
+    if(e.ctrlKey&&['c','v','u','s'].includes(e.key.toLowerCase())){ e.preventDefault(); }
+  }
+});
+document.addEventListener('contextmenu', e=>{ if(examRunning){ e.preventDefault(); triggerWarn('Nhấp chuột phải'); } });
+
+/* ============================================================
+   DEVTOOLS DETECTION
+   ============================================================ */
+let devToolsOpen = false;
+setInterval(()=>{
+  const t = performance.now();
+  debugger;
+  if(performance.now()-t > 100 && !devToolsOpen && examRunning){ devToolsOpen=true; triggerWarn('Mở DevTools/Console'); }
+  else if(performance.now()-t < 50) devToolsOpen=false;
+},2000);
+
+/* ============================================================
+   ANTI-CHEAT HANDLER
+   ============================================================ */
+function triggerWarn(reason){
+  warnCount++;
+  document.getElementById('warnCount').textContent = '⚠️ LỖI #'+warnCount;
+  document.getElementById('warnMsg').textContent = 'Phát hiện: ' + reason;
+  document.getElementById('cheatWarn').classList.add('show');
+  toast('Vi phạm: '+reason,'error',4000);
+  logViolation(reason);
+}
+function dismissWarn(){ document.getElementById('cheatWarn').classList.remove('show'); }
+function logViolation(reason){
+  let logs = JSON.parse(localStorage.getItem('violations')||'[]');
+  logs.push({ user, reason, time: new Date().toISOString() });
+  localStorage.setItem('violations', JSON.stringify(logs));
+}
+
+/* ============================================================
+   PLAY SOUND
+   ============================================================ */
+function playSound(id){ const a=document.getElementById(id); if(a){a.currentTime=0;a.play().catch(()=>{});} }
+
+/* ============================================================
+   START EXAM
+   ============================================================ */
+function startExam(){
+  if(!user){ toast('Chưa đăng nhập!','error'); return; }
+  if(!confirm('Bắt đầu tính giờ ngay bây giờ?\n\nLưu ý: Chuyển tab, copy/paste, mở DevTools sẽ bị ghi lại!')) return;
+
+  playSound('sndStart');
+  examRunning = true;
+
+  const subKey = document.getElementById('subjectSelect').value;
+  const cfg = { Toan:[120,36,'Toán'], Van:[120,20,'Ngữ Văn'], Anh:[90,8,'Tiếng Anh'] };
+  const [mins, maxCode, name] = cfg[subKey];
+  const code = Math.floor(Math.random()*maxCode)+1;
+
+  totalExamSeconds = mins*60;
+  remainingSeconds = totalExamSeconds;
+
+  saveLocalHistory(name,'Đang làm bài');
+  document.getElementById('examSetup').style.display='none';
+  document.getElementById('examUI').style.display='block';
+  document.getElementById('dispSub').textContent = name;
+  document.getElementById('dispCode').textContent = String(code).padStart(3,'0');
+
+  // Auto save draft every 30s
+  const draftKey = 'draft_'+user+'_'+name;
+  localStorage.setItem(draftKey, JSON.stringify({ startTime: Date.now(), subject: name, code }));
+
+  const timer = document.getElementById('timer');
+  const pbar  = document.getElementById('progressBar');
+  let warned5 = false;
+
+  examTimerInterval = setInterval(()=>{
+    remainingSeconds--;
+    const h = Math.floor(remainingSeconds/3600).toString().padStart(2,'0');
+    const m = Math.floor((remainingSeconds%3600)/60).toString().padStart(2,'0');
+    const s = (remainingSeconds%60).toString().padStart(2,'0');
+    timer.textContent = `${h}:${m}:${s}`;
+    pbar.style.width = (remainingSeconds/totalExamSeconds*100)+'%';
+
+    if(remainingSeconds <= 5*60 && !warned5){ warned5=true; timer.className='timer-display warning'; playSound('sndW'); toast('⚠ Còn 5 phút!','warn',5000); }
+    if(remainingSeconds <= 60) timer.className='timer-display danger';
+    if(remainingSeconds <= 0){
+      clearInterval(examTimerInterval);
+      timer.textContent='00:00:00';
+      timer.className='timer-display danger';
+      playSound('sndEnd');
+      toast('⏰ HẾT GIỜ! Nộp bài ngay!','error',8000);
+      showCamera();
     }
-    setInterval(updateRealCountdown, 60000);
-    updateRealCountdown();
+  },1000);
 
-    function playSound(id) {
-        const audio = document.getElementById(id);
-        if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
-    }
+  toast('Bắt đầu thi môn '+name+' — Mã đề '+code,'success');
+}
 
-    function switchTab(tabName, btn) {
-        document.getElementById('examTab').style.display = tabName === 'exam' ? 'block' : 'none';
-        document.getElementById('leaderboardTab').style.display = tabName === 'leaderboard' ? 'block' : 'none';
-        document.getElementById('historyTab').style.display = tabName === 'history' ? 'block' : 'none';
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
+/* ============================================================
+   CAMERA
+   ============================================================ */
+async function showCamera(){
+  document.getElementById('cameraArea').style.display='block';
+  setupDropZone();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+    document.getElementById('webcam').srcObject = stream;
+  } catch(e){ toast('Camera không mở được — dùng nút CHỌN FILE','warn'); }
+}
 
-    function login() {
-        user = document.getElementById('studentName').value;
-        email = document.getElementById('studentEmail').value;
-        if (!user || !email) return alert("Vui lòng nhập đầy đủ!");
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('welcomeUser').innerText = "Học sinh: " + user;
-    }
+function takePhoto(){
+  const video = document.getElementById('webcam');
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth||640; canvas.height = video.videoHeight||480;
+  canvas.getContext('2d').drawImage(video,0,0);
+  // Compress
+  const compressed = canvas.toDataURL('image/jpeg', 0.75);
+  capturedImages.push(compressed);
+  renderGallery();
+  // Flash effect
+  const f = document.getElementById('flashOverlay');
+  f.classList.add('flash'); setTimeout(()=>f.classList.remove('flash'),150);
+  toast('Đã chụp trang '+(capturedImages.length),'success',1500);
+}
 
-    function startExam() {
-        if(!confirm("Bắt đầu tính giờ ngay bây giờ?")) return;
-        
-        playSound('sndStart'); // Âm thanh bắt đầu
-        
-        const subKey = document.getElementById('subjectSelect').value;
-        const config = { "Toan": [120, 36, "Toán"], "Van": [120, 20, "Ngữ Văn"], "Anh": [90, 8, "Tiếng Anh"] };
-        const [mins, maxCode, name] = config[subKey];
-        const code = Math.floor(Math.random() * maxCode) + 1;
+function handleFileUpload(event){
+  const files = event.target.files;
+  let loaded = 0;
+  for(let i=0;i<files.length;i++){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      // Auto compress
+      const img = new Image();
+      img.onload = function(){
+        const c = document.createElement('canvas');
+        const max = 1200;
+        let w=img.width, h=img.height;
+        if(w>max){ h=h*max/w; w=max; }
+        c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        capturedImages.push(c.toDataURL('image/jpeg',0.75));
+        loaded++;
+        if(loaded===files.length){ renderGallery(); toast('Đã thêm '+files.length+' ảnh','success'); }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(files[i]);
+  }
+  event.target.value='';
+}
 
-        saveLocalHistory(name, "Đang làm bài");
-        document.getElementById('setup').style.display = 'none';
-        document.getElementById('exam-ui').style.display = 'block';
-        document.getElementById('dispSub').innerText = name;
-        document.getElementById('dispCode').innerText = code;
+function setupDropZone(){
+  const dz = document.getElementById('dropZone');
+  dz.addEventListener('dragover', e=>{ e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', ()=>dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e=>{
+    e.preventDefault(); dz.classList.remove('drag-over');
+    const fakeEvt = { target:{ files: e.dataTransfer.files }, value:'' };
+    handleFileUpload(fakeEvt);
+  });
+}
 
-        let time = mins * 60;
-        const interval = setInterval(() => {
-            time--;
-            const h = Math.floor(time / 3600).toString().padStart(2,'0');
-            const m = Math.floor((time % 3600) / 60).toString().padStart(2,'0');
-            const s = (time % 60).toString().padStart(2,'0');
-            document.getElementById('timer').innerText = `${h}:${m}:${s}`;
-            
-            if (time === 10) document.getElementById('timer').style.color = 'red'; // Nháy đỏ 10s cuối
-            if (time === 5*60) {
-                playSound('sndW'); // Âm thanh cảnh báo 5s
-            }
-            if (time <= 0) { 
-                clearInterval(interval); 
-                playSound('sndEnd'); // Âm thanh kết thúc
-                alert("HẾT GIỜ LÀM BÀI! Hãy chụp bài nộp ngay.");
-                showCamera(); 
-            }
-        }, 1000);
-    }
+function removePhoto(index){ if(confirm('Xóa trang '+(index+1)+'?')){ capturedImages.splice(index,1); renderGallery(); toast('Đã xóa ảnh','warn',1500); } }
 
-    async function showCamera() {
-        document.getElementById('cameraArea').style.display = 'block';
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            document.getElementById('webcam').srcObject = stream;
-        } catch (e) {
-            alert("Camera không mở được, hãy dùng nút CHỌN FILE.");
-        }
-    }
+function renderGallery(){
+  const g = document.getElementById('photoGallery'); g.innerHTML='';
+  capturedImages.forEach((d,i)=>{
+    const item = document.createElement('div'); item.className='gallery-item';
+    item.innerHTML = `<img src="${d}"><span class="del-btn">✕</span><span class="gallery-page-num">Tr.${i+1}</span>`;
+    item.querySelector('.del-btn').onclick=(e)=>{ e.stopPropagation(); removePhoto(i); };
+    g.appendChild(item);
+  });
+  document.getElementById('photoCount').textContent = capturedImages.length;
+  const hasImg = capturedImages.length>0;
+  document.getElementById('galleryHint').style.display = hasImg?'block':'none';
+  document.getElementById('submitBtn').style.display = hasImg?'flex':'none';
+}
 
-    function takePhoto() {
-        const video = document.getElementById('webcam');
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        capturedImages.push(canvas.toDataURL('image/jpeg'));
-        renderGallery();
-        video.style.opacity = "0.5";
-        setTimeout(() => video.style.opacity = "1", 100);
-    }
+/* ============================================================
+   UPLOAD / SUBMIT
+   ============================================================ */
+async function uploadToCloud(){
+  if(capturedImages.length===0){ toast('Chưa có ảnh bài làm!','error'); return; }
+  if(!confirm('Xác nhận nộp '+capturedImages.length+' trang? Sau khi nộp không thể thay đổi.')) return;
 
-    function handleFileUpload(event) {
-        const files = event.target.files;
-        for (let i = 0; i < files.length; i++) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                capturedImages.push(e.target.result);
-                renderGallery();
-            };
-            reader.readAsDataURL(files[i]);
-        }
-        event.target.value = "";
-    }
+  const btn = document.getElementById('submitBtn');
+  btn.textContent='⏳ ĐANG GỬI '+capturedImages.length+' TRANG...';
+  btn.disabled=true; examRunning=false;
 
-    function removePhoto(index) {
-        if(confirm("Xóa ảnh này?")) {
-            capturedImages.splice(index, 1);
-            renderGallery();
-        }
-    }
+  const payload={ action:'submitExam', studentName:user, email, subject:document.getElementById('dispSub').textContent, code:document.getElementById('dispCode').textContent, images:capturedImages };
 
-    function renderGallery() {
-        const gallery = document.getElementById('photoGallery');
-        gallery.innerHTML = "";
-        capturedImages.forEach((imgData, index) => {
-            const img = document.createElement('img');
-            img.src = imgData;
-            img.onclick = () => removePhoto(index);
-            gallery.appendChild(img);
-        });
-        document.getElementById('photoCount').innerText = capturedImages.length;
-        document.getElementById('galleryHint').style.display = capturedImages.length > 0 ? 'block' : 'none';
-        document.getElementById('submitBtn').style.display = capturedImages.length > 0 ? 'block' : 'none';
-    }
+  try {
+    await fetch(SCRIPT_URL,{ method:'POST', mode:'no-cors', body:JSON.stringify(payload) });
+    saveLocalHistory(document.getElementById('dispSub').textContent,'Đã nộp bài');
+    fireConfetti();
+    toast('🎉 Nộp bài thành công!','success',5000);
+    setTimeout(()=>location.reload(),3000);
+  } catch(e){
+    toast('Lỗi kết nối! Thử lại.','error');
+    btn.disabled=false; btn.textContent='✅ NỘP TẤT CẢ ('+capturedImages.length+') ẢNH';
+    examRunning=true;
+  }
+}
 
-    async function uploadToCloud() {
-        if(capturedImages.length === 0) return alert("Chưa có ảnh bài làm!");
-        const btn = document.getElementById('submitBtn');
-        btn.innerText = "ĐANG GỬI " + capturedImages.length + " TRANG...";
-        btn.disabled = true;
-        const payload = { 
-            action: "submitExam", studentName: user, email: email, 
-            subject: document.getElementById('dispSub').innerText, 
-            code: document.getElementById('dispCode').innerText, images: capturedImages 
-        };
-        try {
-            await fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
-            saveLocalHistory(document.getElementById('dispSub').innerText, "Đã nộp bài");
-            alert("Nộp bài thành công!");
-            location.reload();
-        } catch (e) {
-            alert("Lỗi nộp bài!");
-            btn.disabled = false;
-        }
-    }
+/* ============================================================
+   CONFETTI
+   ============================================================ */
+function fireConfetti(){
+  const opts = { particleCount:120, spread:80, origin:{y:0.6} };
+  confetti({ ...opts, colors:['#00e5ff','#ff4081','#ffd600'] });
+  setTimeout(()=>confetti({ ...opts, angle:60,  origin:{x:0,y:0.6} }),300);
+  setTimeout(()=>confetti({ ...opts, angle:120, origin:{x:1,y:0.6} }),600);
+}
 
-    function saveLocalHistory(sub, status) {
-        let history = JSON.parse(localStorage.getItem('my_exams') || "[]");
-        history.unshift({ sub, status, date: new Date().toLocaleDateString('vi-VN') });
-        localStorage.setItem('my_exams', JSON.stringify(history));
-    }
+/* ============================================================
+   HISTORY
+   ============================================================ */
+function saveLocalHistory(sub, status){
+  let h=JSON.parse(localStorage.getItem('my_exams')||'[]');
+  h.unshift({ sub, status, date:new Date().toLocaleDateString('vi-VN') });
+  localStorage.setItem('my_exams',JSON.stringify(h));
+}
+function displayHistory(){
+  const h=JSON.parse(localStorage.getItem('my_exams')||'[]');
+  const body=document.getElementById('historyBody');
+  if(!h.length){ body.innerHTML='<div style="text-align:center;color:var(--text2);padding:30px;font-size:0.85rem;">Chưa có lịch sử</div>'; return; }
+  body.innerHTML=h.map(i=>`
+    <div class="hist-item">
+      <div>
+        <div style="font-weight:700;">${i.sub}</div>
+        <div style="font-size:0.75rem;color:var(--text2);">${i.date}</div>
+      </div>
+      <span class="badge ${i.status==='Đã nộp bài'?'badge-done':'badge-wait'}">${i.status}</span>
+    </div>`).join('');
+}
 
-    function displayHistory() {
-        const history = JSON.parse(localStorage.getItem('my_exams') || "[]");
-        document.getElementById('historyBody').innerHTML = history.map(i => `<tr><td>${i.sub}</td><td>${i.date}</td><td><span class="badge ${i.status==='Đã nộp bài'?'badge-done':'badge-wait'}">${i.status}</span></td></tr>`).join('');
-    }
+/* ============================================================
+   LEADERBOARD
+   ============================================================ */
+async function loadLeaderboard(){
+  const tbody=document.getElementById('leaderboardBody');
+  tbody.innerHTML='<tr><td colspan="4"><div class="skeleton" style="width:100%"></div></td></tr>'.repeat(5);
+  try {
+    const res=await fetch(SCRIPT_URL);
+    const data=await res.json();
+    const ranked=data.filter(i=>!isNaN(parseFloat(i.score))).sort((a,b)=>b.score-a.score);
 
-    async function loadLeaderboard() {
-        const tbody = document.getElementById('leaderboardBody');
-        tbody.innerHTML = "Đang tải...";
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const data = await res.json();
-            const ranked = data.filter(i => !isNaN(parseFloat(i.score))).sort((a,b) => b.score - a.score);
-            tbody.innerHTML = ranked.slice(0,10).map((item, idx) => `<tr><td>${idx+1}</td><td>${item.name}</td><td>${item.subject}</td><td>${item.score}</td></tr>`).join('');
-        } catch(e) { tbody.innerHTML = "Không thể tải."; }
-    }
+    // Podium
+    const pod=[ranked[0],ranked[1],ranked[2]];
+    [['pod1','podium-1'],['pod2','podium-2'],['pod3','podium-3']].forEach(([id],idx)=>{
+      const p=pod[idx];
+      document.getElementById(id+'name').textContent = p?p.name:'--';
+      document.getElementById(id+'score').textContent = p?p.score:'--';
+    });
+
+    tbody.innerHTML=ranked.slice(0,10).map((item,idx)=>{
+      const medal=['🥇','🥈','🥉'][idx]||'';
+      return `<tr><td class="lb-rank">${medal||idx+1}</td><td>${item.name}</td><td style="font-size:0.8rem;color:var(--text2)">${item.subject}</td><td class="lb-score">${item.score}</td></tr>`;
+    }).join('');
+  } catch(e){ tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:20px;">Không thể tải dữ liệu</td></tr>'; }
+}
+
+/* ============================================================
+   TAB SWITCH
+   ============================================================ */
+function switchTab(name, btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+// Auto-restore draft
+window.addEventListener('load',()=>{
+  const saved = localStorage.getItem('user_session');
+  if(saved){ const s=JSON.parse(saved); document.getElementById('studentName').value=s.name||''; document.getElementById('studentEmail').value=s.email||''; }
+});
+document.getElementById('studentName').addEventListener('input', ()=>{
+  localStorage.setItem('user_session', JSON.stringify({ name:document.getElementById('studentName').value, email:document.getElementById('studentEmail').value }));
+});
 </script>
 </body>
 </html>
